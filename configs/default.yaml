@@ -1,0 +1,39 @@
+# Default config for gTCN: causal dilated TCN renderer with effect encoder.
+
+data:
+  # Sibling repo containing the paired dry (X) / wet (y/<timbre>) dataset.
+  x_root: "../GTtimbre/data/X"
+  y_root: "../GTtimbre/data/y"
+  sample_rate: 44100
+  segment_seconds: 1.0      # training input/target crop length
+  reference_seconds: 2.0    # dry/wet reference crop fed to the effect encoder
+  val_ratio: 0.1
+  seed: 0
+
+model:
+  residual_channels: 64
+  skip_channels: 64
+  kernel_size: 3
+  num_blocks: 4
+  layers_per_block: 10      # dilations cycle 1,2,4,...,2^(layers_per_block-1)
+  cond_dim: 128
+  encoder_base_channels: 32
+
+train:
+  batch_size: 8
+  epochs: 300
+  lr: 0.0003
+  grad_clip: 1.0
+  num_workers: 8
+  steps_per_epoch: 200      # dataset is crop-based/infinite, fix epoch length
+  val_steps: 40
+  stft_loss_weight: 1.0
+  time_loss_weight: 1.0
+  log_every: 20
+  checkpoint_dir: "checkpoints"
+  tensorboard_dir: "outputs/tensorboard"
+
+stft_loss:
+  fft_sizes: [2048, 1024, 512]
+  hop_sizes: [512, 256, 128]
+  win_lengths: [2048, 1024, 512]

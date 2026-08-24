@@ -17,6 +17,7 @@ env/
 htmlcov/
 logs/
 checkpoints/
+outputs/
 
 # Jupyter checkpoints
 .ipynb_checkpoints/

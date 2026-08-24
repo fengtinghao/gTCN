@@ -191,6 +191,15 @@ class GTCNModel(nn.Module):
         wet_pred = self.renderer(perf_features, z)
         return wet_pred, z
 
+    def encode_effect(self, dry_ref, wet_ref):
+        """Encode a reference pair without rendering a target waveform."""
+        return self.effect_encoder(dry_ref, wet_ref)
+
+    def render_with_z(self, dry, z):
+        """Render using a precomputed effect embedding."""
+        perf_features = self.performance_encoder(dry)
+        return self.renderer(perf_features, z)
+
     def backbone_parameters(self):
         """performance_encoder + renderer: frozen/shared in the hypernetwork stage."""
         yield from self.performance_encoder.parameters()

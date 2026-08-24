@@ -106,6 +106,34 @@ cd src && python inference.py \
   --timbre BritPlexi   # or --ref_dry/--ref_wet for a custom reference pair
 ```
 
+For deterministic inference without a reference pair, first compute robust
+per-effect embeddings from the same renderer checkpoint. This saves one file
+per effect (e.g. `checkpoints/BritPlexi_embeddings.pt`):
+
+```bash
+python src/compute_effect_embeddings.py \
+  --checkpoint checkpoints/best.pt \
+  --output-dir checkpoints
+```
+
+Then load those stored embeddings during inference (pass a single
+`<timbre>_embeddings.pt` file, or the `checkpoints` directory to load all of them):
+
+```bash
+python src/inference.py \
+  --checkpoint checkpoints/best.pt \
+  --embeddings checkpoints/BritPlexi_embeddings.pt \
+  --input path/to/new_dry.wav \
+  --output path/to/predicted_britplexi.wav \
+  --timbre BritPlexi
+```
+
+The embedding utility computes embeddings from many aligned reference pairs,
+removes the furthest 10 percent from a coordinate-wise median center, and
+averages the remaining embeddings. The evaluation notebook uses this fixed-z
+mode and averages the stored BritPlexi/FenderDouble vectors for its custom
+effect experiment.
+
 ## Project layout
 
 ```
@@ -115,6 +143,8 @@ src/model.py           # EffectEncoder + TCNRenderer + GTCNModel
 src/losses.py          # multi-resolution STFT + time-domain loss
 src/train.py           # training loop, checkpointing, TensorBoard
 src/inference.py       # render a new dry clip given a checkpoint + reference
+src/compute_effect_embeddings.py # robust fixed z per effect
+notebooks/evaluate_fixed_z.ipynb # deterministic stored-z evaluation
 scripts/train.slurm    # SLURM submission script (cs-gpu partition)
 scripts/check_gpu.slurm
 ```

@@ -29,9 +29,10 @@ def _to_mono(audio):
     return audio.astype(np.float32)
 
 
-def _read_crop(path, frames_total, crop_len, rng):
+def _read_crop(path, frames_total, crop_len, rng, start=None):
     if frames_total >= crop_len:
-        start = rng.randint(0, frames_total - crop_len)
+        if start is None:
+            start = rng.randint(0, frames_total - crop_len)
         audio, _ = sf.read(path, start=start, frames=crop_len, dtype="float32", always_2d=False)
         audio = _to_mono(audio)
     else:
@@ -57,7 +58,10 @@ class GuitarPairIndex:
             wet_path = y_timbre_root / rel.parent / wet_name
 
             if not wet_path.exists():
-                continue
+                candidates = sorted((y_timbre_root / rel.parent).glob(f"{dry_path.stem}-*.wav"))
+                if len(candidates) != 1:
+                    continue
+                wet_path = candidates[0]
 
             frames = sf.info(str(dry_path)).frames
             if frames < min_frames:
@@ -130,12 +134,18 @@ class MultiTimbreGuitarDataset(Dataset):
         pairs = self.indices[timbre]
 
         dry_path, wet_path, frames = rng.choice(pairs)
-        dry = _read_crop(dry_path, frames, self.segment_length, rng)
-        wet = _read_crop(wet_path, frames, self.segment_length, rng)
+        segment_start = rng.randint(0, max(0, frames - self.segment_length))
+        dry = _read_crop(dry_path, frames, self.segment_length, rng, start=segment_start)
+        wet = _read_crop(wet_path, frames, self.segment_length, rng, start=segment_start)
 
         ref_dry_path, ref_wet_path, ref_frames = rng.choice(pairs)
-        dry_ref = _read_crop(ref_dry_path, ref_frames, self.reference_length, rng)
-        wet_ref = _read_crop(ref_wet_path, ref_frames, self.reference_length, rng)
+        reference_start = rng.randint(0, max(0, ref_frames - self.reference_length))
+        dry_ref = _read_crop(
+            ref_dry_path, ref_frames, self.reference_length, rng, start=reference_start
+        )
+        wet_ref = _read_crop(
+            ref_wet_path, ref_frames, self.reference_length, rng, start=reference_start
+        )
 
         return {
             "dry": torch.from_numpy(dry).unsqueeze(0),

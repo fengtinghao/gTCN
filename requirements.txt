@@ -3,3 +3,6 @@ soundfile
 tqdm
 tensorboard
 pyyaml
+matplotlib
+ipykernel
+ipywidgets

@@ -11,7 +11,7 @@ new dry guitar --> [PerformanceEncoder] --> [renderer, causal dilated TCN] --> p
                          (dry_ref, wet_ref) --> [EffectEncoder] --> z
 ```
 
-This is step one of a bigger project: eventually many effects will be trained
+This is a  project that many effects will be trained
 this way, the resulting effect-encoder outputs will form a parameter space,
 and a hypernetwork will be trained to predict that parameter set directly
 from a (dry, wet) pair — at which point `performance_encoder` + `renderer`

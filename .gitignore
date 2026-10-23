@@ -16,7 +16,6 @@ env/
 .coverage
 htmlcov/
 logs/
-checkpoints/
 outputs/
 
 # Jupyter checkpoints
